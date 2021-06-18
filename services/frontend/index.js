@@ -16,7 +16,7 @@ function newBook(book) {
                 <div class="content book" data-id="${book.id}">
                     <div class="book-meta">
                         <p class="is-size-4">R$${book.price.toFixed(2)}</p>
-                        <p class="is-size-6">Disponível em estoque: 5</p>
+                        <p class="is-size-6 qtd">Disponível em estoque: ${book.quantity}</p>
                         <h4 class="is-size-3 title">${book.name}</h4>
                         <p class="subtitle">${book.author}</p>
                     </div>
@@ -28,14 +28,14 @@ function newBook(book) {
                             <a class="button button-shipping is-info" data-id="${book.id}"> Calcular Frete </a>
                         </div>
                     </div>
-                    <button class="button comprar is-success is-fullwidth">Comprar</button>
+                    <button class= "button comprar is-fullwidth is-success" data-id="${book.id}"> Comprar </button>
                 </div>
             </div>
         </div>`;
     return div;
 }
 
-function calculateShipping(id, cep) {
+function calculateShipping(cep) {
     fetch('http://localhost:3000/shipping/' + cep)
         .then((data) => {
             if (data.ok) {
@@ -52,9 +52,40 @@ function calculateShipping(id, cep) {
         });
 }
 
+function DiminuirEstoque(id) {
+    fetch('http://localhost:3000/tirar/' + id)
+        .then((data) => {
+            if (data.ok) {
+                id--
+                return data.json();
+            }
+            throw data.statusText;
+        })
+        .then(function (data) {
+            if (data.quantity >= 0){
+                let tag = document.querySelectorAll(`.book .qtd`)[id];
+                var text = document.createTextNode(`Disponível em estoque: ${data.quantity}`);
+                tag.replaceChild(text, tag.childNodes[0]);
+            }else {
+                swal('Erro', 'Não há inventário!', 'error');
+            }
+            AtualizarEstoque(data.quantity, id);
+        })
+        .catch((err) => {
+            swal('Erro', 'Erro!', 'error');
+            console.error(err);
+        });
+}
+function AtualizarEstoque(qtd, id){
+    if (qtd <= 0){
+        $(".comprar")[id].setAttribute("disabled", "");
+    }else {
+        $(".comprar")[id].removeAttribute("disabled", "");
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function () {
     const books = document.querySelector('.books');
-
     fetch('http://localhost:3000/products')
         .then((data) => {
             if (data.ok) {
@@ -66,19 +97,23 @@ document.addEventListener('DOMContentLoaded', function () {
             if (data) {
                 data.forEach((book) => {
                     books.appendChild(newBook(book));
+
+                    AtualizarEstoque(book.quantity, book.id - 1);
                 });
 
                 document.querySelectorAll('.button-shipping').forEach((btn) => {
                     btn.addEventListener('click', (e) => {
                         const id = e.target.getAttribute('data-id');
                         const cep = document.querySelector(`.book[data-id="${id}"] input`).value;
-                        calculateShipping(id, cep);
+                        calculateShipping(cep);
                     });
                 });
 
                 document.querySelectorAll('.comprar').forEach((btn) => {
-                    btn.addEventListener('click', (e) => {
-                        swal('Compra de livro', 'Sua compra foi realizada com sucesso', 'success');
+                    btn.addEventListener('click', (e) => {                    
+                        const id = e.target.getAttribute('data-id');
+                        DiminuirEstoque(id);
+                        swal('Compra de livros', 'Compra realizada com sucesso!', 'success');
                     });
                 });
             }

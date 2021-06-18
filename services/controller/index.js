@@ -53,6 +53,28 @@ app.get('/product/:id', (req, res, next) => {
     });
 });
 
+app.get('/add/:id', (req, res, next) => {
+    inventory.AddInventory({ id: req.params.id }, (err, product) => {
+        if (err) {
+            console.error(err);
+            res.status(500).send({ error: 'something failed :(' });
+        } else {
+            res.json(product);
+        }
+    });
+});
+
+app.get('/tirar/:id', (req, res, next) => {
+    inventory.RemoveInventory({ id: req.params.id }, (err, product) => {
+        if (err) {
+            console.error(err);
+            res.status(500).send({ error: 'something failed :(' });
+        } else {
+            res.json(product);
+        }
+    });
+});
+
 /**
  * Inicia o router
  */

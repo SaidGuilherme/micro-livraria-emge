@@ -13,7 +13,6 @@ const inventoryProto = grpc.loadPackageDefinition(packageDefinition);
 
 const server = new grpc.Server();
 
-// implementa os métodos do InventoryService
 server.addService(inventoryProto.InventoryService.service, {
     searchAllProducts: (_, callback) => {
         callback(null, {
@@ -25,7 +24,28 @@ server.addService(inventoryProto.InventoryService.service, {
             null,
             products.find((product) => product.id == payload.request.id)
         );
-    }
+    },
+    AddInventory: (payload, callback) => {
+        let product = products.find((product) => product.id == payload.request.id)
+        if (product.quantity < 10){
+            product.quantity++
+            console.log(product)
+        }
+        callback(
+            null,
+            product
+        );
+    },
+    RemoveInventory: (payload, callback) => {
+        let product = products.find((product) => product.id == payload.request.id)
+        if (product.quantity > 0){
+            product.quantity--
+        }
+        callback(
+            null,
+            product
+        );
+    },
 });
 
 server.bindAsync('127.0.0.1:3002', grpc.ServerCredentials.createInsecure(), () => {
