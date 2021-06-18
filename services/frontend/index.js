@@ -28,7 +28,7 @@ function newBook(book) {
                             <a class="button button-shipping is-info" data-id="${book.id}"> Calcular Frete </a>
                         </div>
                     </div>
-                    <button class="button button-buy is-success is-fullwidth">Comprar</button>
+                    <button class="button comprar is-success is-fullwidth">Comprar</button>
                 </div>
             </div>
         </div>`;
@@ -76,7 +76,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     });
                 });
 
-                document.querySelectorAll('.button-buy').forEach((btn) => {
+                document.querySelectorAll('.comprar').forEach((btn) => {
                     btn.addEventListener('click', (e) => {
                         swal('Compra de livro', 'Sua compra foi realizada com sucesso', 'success');
                     });
